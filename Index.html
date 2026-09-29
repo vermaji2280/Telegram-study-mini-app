@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Rewards</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f8fa;
+      color: #202124;
+    }
+
+    .app {
+      max-width: 600px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: #777;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .points {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-weight: 600;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid #e7e7e7;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-weight: 700;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .question-number {
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      border: 1px solid #dedede;
+      border-radius: 11px;
+      padding: 13px;
+      margin-bottom: 9px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .option:hover {
+      border-color: #aaa;
+    }
+
+    .option.selected {
+      border-color: #777;
+      background: #fafafa;
+    }
+
+    /* Very light feedback colors */
+    .option.correct {
+      border-color: #b9d9c0;
+      background: #f7fcf8;
+    }
+
+    .option.wrong {
+      border-color: #e5bcbc;
+      background: #fff9f9;
+    }
+
+    .feedback {
+      min-height: 42px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #666;
+    }
+
+    .next-btn {
+      width: 100%;
+      border: none;
+      border-radius: 11px;
+      padding: 13px;
+      background: #202124;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .next-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .result {
+      display: none;
+      text-align: center;
+    }
+
+    .result-score {
+      font-size: 42px;
+      font-weight: 800;
+      margin: 12px 0;
+    }
+
+    .reward {
+      background: #fafafa;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 14px;
+      margin: 16px 0;
+    }
+
+    .restart {
+      width: 100%;
+      border: none;
+      border-radius: 11px;
+      padding: 13px;
+      background: #202124;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div>
+      <div class="title">📚 Study Test</div>
+      <div class="subtitle">Agriculture • Crop Physiology</div>
+    </div>
+
+    <div class="points">
+      ⭐ <span id="points">120</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">QUESTION</div>
+      <div class="stat-value" id="progress">1 / 10</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">TIME</div>
+      <div class="stat-value" id="timer">05:00</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">SCORE</div>
+      <div class="stat-value" id="score">0</div>
+    </div>
+  </div>
+
+  <div class="card" id="quizCard">
+
+    <div class="question-number" id="questionNumber">
+      Question 1
+    </div>
+
+    <div class="question" id="question">
+      Loading...
+    </div>
+
+    <div id="options"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <button class="next-btn" id="nextButton" disabled>
+      Next Question
+    </button>
+
+  </div>
+
+  <div class="card result" id="result">
+
+    <h2>🎉 Test Completed</h2>
+
+    <div class="result-score" id="finalScore">
+      0 / 10
+    </div>
+
+    <div id="accuracy">
+      Accuracy: 0%
+    </div>
+
+    <div class="reward">
+      ⭐ Points earned: <strong id="earnedPoints">0</strong>
+      <br><br>
+      🏆 Total points: <strong id="totalPoints">0</strong>
+    </div>
+
+    <button class="restart" onclick="location.reload()">
+      Take Test Again
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+
+const questions = [
+
+  {
+    question:
+      "Which process primarily helps water move upward through the xylem in a transpiring plant?",
+
+    options: [
+      "Root pressure",
+      "Transpiration pull",
+      "Phloem loading",
+      "Diffusion of sugars"
+    ],
+
+    answer: 1,
+
+    explanation:
+      "Transpiration from leaves creates tension that helps pull water upward through the xylem."
+  },
+
+  {
+    question:
+      "Which plant tissue mainly transports water and minerals?",
+
+    options: [
+      "Phloem",
+      "Xylem",
+      "Cambium",
+      "Epidermis"
+    ],
+
+    answer: 1,
+
+    explanation:
+      "Xylem conducts water and mineral nutrients from roots toward the shoot."
+  },
+
+  {
+    question:
+      "What is the main site of photosynthesis in most green leaves?",
+
+    options: [
+      "Root hairs",
+      "Mesophyll cells",
+      "Xylem vessels",
+      "Phloem cells"
+    ],
+
+    answer: 1,
+
+    explanation:
+      "Mesophyll cells contain many chloroplasts and are the main photosynthetic tissue."
+  },
+
+  {
+    question:
+      "Stomata mainly regulate which processes?",
+
+    options: [
+      "Water loss and gas exchange",
+      "Seed germination",
+      "Root growth",
+      "Fruit ripening"
+    ],
+
+    answer: 0,
+
+    explanation:
+      "Stomata regulate gas exchange and water vapour loss through transpiration."
+  },
+
+  {
+    question:
+      "Which hormone is strongly associated with stomatal closure during water stress?",
+
+    options: [
+      "Auxin",
+      "Gibberellin",
+      "Abscisic acid",
+      "Cytokinin"
+    ],
+
+    answer: 2,
+
+    explanation:
+      "Abscisic acid (ABA) promotes stomatal closure under many water-stress conditions."
+  },
+
+  {
+    question:
+      "In C4 plants, initial carbon fixation mainly occurs in:",
+
+    options: [
+      "Mesophyll cells",
+      "Root cells",
+      "Guard cells",
+      "Xylem cells"
+    ],
+
+    answer: 0,
+
+    explanation:
+      "C4 plants initially fix CO₂ in mesophyll cells before further processing in bundle sheath cells."
+  },
+
+  {
+    question:
+      "Which cells control the opening and closing of stomata?",
+
+    options: [
+      "Companion cells",
+      "Guard cells",
+      "Sieve tubes",
+      "Trichomes"
+    ],
+
+    answer: 1,
+
+    explanation:
+      "Guard cells change their shape and control the stomatal pore."
+  },
+
+  {
+    question:
+      "Which organelle contains chlorophyll?",
+
+    options: [
+      "Mitochondrion",
+      "Chloroplast",
+      "Ribosome",
+      "Vacuole"
+    ],
+
+    answer: 1,
+
+    explanation:
+      "Chlorophyll is present in chloroplasts, particularly in the thylakoid membranes."
+  },
+
+  {
+    question:
+      "Transpiration is mainly the loss of water in the form of:",
+
+    options: [
+      "Liquid water",
+      "Water vapour",
+      "Ice",
+      "Sugar solution"
+    ],
+
+    answer: 1,
+
+    explanation:
+      "Transpiration is the loss of water vapour from aerial parts of plants."
+  },
+
+  {
+    question:
+      "Water potential is commonly expressed in terms of:",
+
+    options: [
+      "Pressure",
+      "Temperature",
+      "Light intensity",
+      "Plant height"
+    ],
+
+    answer: 0,
+
+    explanation:
+      "Water potential is commonly expressed in pressure units such as MPa."
+  }
+
+];
+
+let currentQuestion = 0;
+let score = 0;
+let points = 120;
+let answered = false;
+
+let timeLeft = 300;
+
+const questionElement =
+  document.getElementById("question");
+
+const questionNumberElement =
+  document.getElementById("questionNumber");
+
+const optionsElement =
+  document.getElementById("options");
+
+const feedbackElement =
+  document.getElementById("feedback");
+
+const nextButton =
+  document.getElementById("nextButton");
+
+const scoreElement =
+  document.getElementById("score");
+
+const pointsElement =
+  document.getElementById("points");
+
+const progressElement =
+  document.getElementById("progress");
+
+const timerElement =
+  document.getElementById("timer");
+
+
+function loadQuestion() {
+
+  answered = false;
+
+  const q = questions[currentQuestion];
+
+  questionNumberElement.textContent =
+    "Question " + (currentQuestion + 1);
+
+  progressElement.textContent =
+    (currentQuestion + 1) +
+    " / " +
+    questions.length;
+
+  questionElement.textContent =
+    q.question;
+
+  optionsElement.innerHTML = "";
+
+  feedbackElement.textContent = "";
+
+  nextButton.disabled = true;
+
+  q.options.forEach((option, index) => {
+
+    const button =
+      document.createElement("button");
+
+    button.className = "option";
+
+    button.textContent =
+      String.fromCharCode(65 + index) +
+      ". " +
+      option;
+
+    button.onclick = () =>
+      selectAnswer(index, button);
+
+    optionsElement.appendChild(button);
+
+  });
+
+}
+
+
+function selectAnswer(index, selectedButton) {
+
+  if (answered) return;
+
+  answered = true;
+
+  const q = questions[currentQuestion];
+
+  const buttons =
+    document.querySelectorAll(".option");
+
+  buttons.forEach((button, i) => {
+
+    button.disabled = true;
+
+    if (i === q.answer) {
+
+      button.classList.add("correct");
+
+    }
+
+  });
+
+  if (index === q.answer) {
+
+    score++;
+
+    points += 10;
+
+    selectedButton.classList.add("correct");
+
+    feedbackElement.textContent =
+      "✓ Correct! +10 points. " +
+      q.explanation;
+
+  } else {
+
+    selectedButton.classList.add("wrong");
+
+    feedbackElement.textContent =
+      "✕ Incorrect. " +
+      q.explanation;
+
+  }
+
+  scoreElement.textContent = score;
+
+  pointsElement.textContent = points;
+
+  nextButton.disabled = false;
+
+}
+
+
+nextButton.onclick = function () {
+
+  if (currentQuestion < questions.length - 1) {
+
+    currentQuestion++;
+
+    loadQuestion();
+
+  } else {
+
+    finishTest();
+
+  }
+
+};
+
+
+function finishTest() {
+
+  clearInterval(timer);
+
+  document.getElementById("quizCard")
+    .style.display = "none";
+
+  document.getElementById("result")
+    .style.display = "block";
+
+  const accuracy =
+    Math.round(
+      (score / questions.length) * 100
+    );
+
+  document.getElementById("finalScore")
+    .textContent =
+      score + " / " + questions.length;
+
+  document.getElementById("accuracy")
+    .textContent =
+      "Accuracy: " + accuracy + "%";
+
+  document.getElementById("earnedPoints")
+    .textContent =
+      score * 10;
+
+  document.getElementById("totalPoints")
+    .textContent =
+      points;
+
+}
+
+
+const timer = setInterval(function () {
+
+  timeLeft--;
+
+  const minutes =
+    Math.floor(timeLeft / 60);
+
+  const seconds =
+    String(timeLeft % 60)
+      .padStart(2, "0");
+
+  timerElement.textContent =
+    String(minutes).padStart(2, "0") +
+    ":" +
+    seconds;
+
+  if (timeLeft <= 0) {
+
+    finishTest();
+
+  }
+
+}, 1000);
+
+
+loadQuestion();
+
+</script>
+
+</body>
+  </html>
